@@ -12,7 +12,7 @@ import (
 	"strings"
 	"sync"
 
-	"rollc.at/dtools/dmenu"
+	"github.com/rollcat/dtools/dmenu"
 
 	"gopkg.in/ini.v1"
 )

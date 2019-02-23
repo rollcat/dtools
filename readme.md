@@ -1,4 +1,7 @@
-# dlaunch
+# dtools
 
-Fast command launcher, based on dmenu, that understands XDG .desktop
-files.
+Collection of simple desktop utilities based around `dmenu`.
+
+## dlaunch
+
+Fast command launcher, that understands XDG .desktop files.
