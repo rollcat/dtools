@@ -23,6 +23,7 @@ type DmenuOpts struct {
 	CaseInsensitive bool
 	Bottom          bool
 	Prompt          string
+	NoEarlyGrab     bool
 }
 
 func (d *DmenuOpts) Choose() string {
@@ -33,8 +34,10 @@ func (d *DmenuOpts) Choose() string {
 	}
 	args := []string{
 		dmenuPath,
-		"-f",
 		"-l", fmt.Sprintf("%d", d.ShowLines),
+	}
+	if !d.NoEarlyGrab {
+		args = append(args, "-f")
 	}
 	if d.CaseInsensitive {
 		args = append(args, "-i")
