@@ -1,0 +1,89 @@
+package dmenu
+
+import (
+	"fmt"
+	"os"
+	"os/exec"
+	"strings"
+)
+
+var dmenuPath = ""
+
+func init() {
+	var err error
+	dmenuPath, err = exec.LookPath("dmenu")
+	assert(err)
+}
+
+type DmenuOpts struct {
+	ChoiceList      []string
+	ChoiceChan      <-chan string
+	ShowLines       int
+	CaseInsensitive bool
+	Bottom          bool
+	Prompt          string
+}
+
+func (d *DmenuOpts) Choose() string {
+	if d.ShowLines < 0 {
+		panic("ShowLines must be 0 or greater")
+	}
+	args := []string{
+		dmenuPath,
+		"-f",
+		"-l", fmt.Sprintf("%d", d.ShowLines),
+	}
+	if d.CaseInsensitive {
+		args = append(args, "-i")
+	}
+	if d.Bottom {
+		args = append(args, "-b")
+	}
+	if d.Prompt != "" {
+		args = append(args, "-p", d.Prompt)
+	}
+	stdin, wp, err := os.Pipe()
+	assert(err)
+	go func() {
+		defer wp.Close()
+		for _, s := range d.ChoiceList {
+			wp.WriteString(s)
+			wp.WriteString("\n")
+		}
+		if d.ChoiceChan == nil {
+			return
+		}
+		for s := range d.ChoiceChan {
+			wp.WriteString(s)
+			wp.WriteString("\n")
+
+		}
+	}()
+	stdout := &strings.Builder{}
+	err = (&exec.Cmd{
+		Path:   dmenuPath,
+		Args:   args,
+		Stdin:  stdin,
+		Stdout: stdout,
+	}).Run()
+	if err != nil {
+		return ""
+	}
+	return stdout.String()
+}
+
+func Dmenu(choices []string) string {
+	return (&DmenuOpts{
+		ChoiceList:      choices,
+		ShowLines:       10,
+		CaseInsensitive: true,
+	}).Choose()
+}
+
+func DmenuChan(ch <-chan string) string {
+	return (&DmenuOpts{
+		ChoiceChan:      ch,
+		ShowLines:       10,
+		CaseInsensitive: true,
+	}).Choose()
+}

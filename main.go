@@ -12,6 +12,8 @@ import (
 	"strings"
 	"sync"
 
+	"rollc.at/dtools/dmenu"
+
 	"gopkg.in/ini.v1"
 )
 
@@ -31,7 +33,6 @@ type desktopFile struct {
 	Keywords    string // Used for indexing in search
 }
 
-var dmenuPath = ""
 var termPath = ""
 var desktopPaths = []string{}
 var desktopFiles = map[string]*desktopFile{}
@@ -153,24 +154,8 @@ func (df *desktopFile) launch() error {
 	return err
 }
 
-func dmenu(choices []string) string {
-	out := &strings.Builder{}
-	err := (&exec.Cmd{
-		Path:   dmenuPath,
-		Args:   []string{dmenuPath, "-f", "-i", "-l", "10"},
-		Stdin:  strings.NewReader(strings.Join(choices, "\n")),
-		Stdout: out,
-	}).Run()
-	if err != nil {
-		return ""
-	}
-	return out.String()
-}
-
 func main() {
 	var err error
-	dmenuPath, err = exec.LookPath("dmenu")
-	assert(err)
 	termPath, err = exec.LookPath("urxvt") // TODO: getenv("XTERM") ?
 	assert(err)
 
@@ -208,7 +193,7 @@ func main() {
 		options = append(options, key)
 	}
 	sort.Strings(options)
-	choice := dmenu(options)
+	choice := dmenu.Dmenu(options)
 	choice = strings.TrimRight(choice, "\n")
 	df, ok := desktopFiles[choice]
 	if ok {
