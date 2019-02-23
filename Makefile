@@ -1,3 +1,5 @@
+PREFIX ?= /usr/local
+
 .PHONY: all
 all: dlaunch dxkbmap
 
@@ -10,3 +12,8 @@ dxkbmap: cmd/dxkbmap/*.go
 .PHONY: clean
 clean:
 	rm -f dlaunch dxkbmap
+
+.PHONY: install
+install: all
+	install dlaunch ${PREFIX}/bin/dlaunch
+	install dxkbmap ${PREFIX}/bin/dxkbmap
